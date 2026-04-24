@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_DIR = "/opt/flask-app"
+        VENV_DIR = "/opt/flask-app/venv"
+        SERVICE_NAME = "flask-app"
+    }
+
+    stages {
+        stage('Copy Files') {
+            steps {
+                sh '''
+                    rsync -rlptDvz --delete --exclude venv --exclude .git flask-app/ ${APP_DIR}/
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    cd ${APP_DIR}
+                    python3 -m venv venv
+                    . ${VENV_DIR}/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Restart Service') {
+            steps {
+                sh '''
+                    sudo systemctl restart ${SERVICE_NAME}
+                    sudo systemctl status ${SERVICE_NAME} --no-pager
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Deployment successful'
+        }
+        failure {
+            echo 'Deployment failed'
+        }
+    }
+}
