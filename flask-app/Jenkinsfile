@@ -31,8 +31,8 @@ pipeline {
         stage('Restart Service') {
             steps {
                 sh '''
-                    sudo systemctl restart ${SERVICE_NAME}
-                    sudo systemctl status ${SERVICE_NAME} --no-pager
+                    sudo /usr/bin/systemctl restart ${SERVICE_NAME}
+                    sudo /usr/bin/systemctl status ${SERVICE_NAME} --no-pager
                 '''
             }
         }
